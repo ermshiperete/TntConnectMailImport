@@ -4,6 +4,7 @@
     "bash": {
       "mvn -version": "allow",
       "mvn test *": "allow",
+      "npm run build *": "allow",
     }
   }
 }

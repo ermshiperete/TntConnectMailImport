@@ -5,8 +5,8 @@ entries.
 
 ## Architecture
 
-Thunderbird add-on (TypeScript) --JSON--> Native host (Java/UCanAccess)
---SQL--> TntConnect .mpddb
+Thunderbird add-on (TypeScript) → JSON → Native host (Java/UCanAccess)
+→ SQL → TntConnect .mpddb
 
 The add-on extracts email metadata and body from Thunderbird, cleans the
 body, and sends it to a native messaging host via JSON over
@@ -30,6 +30,18 @@ npm install
 npm run build
 ```
 
+This produces the built files in `addon/dist/`.
+
+### Package for distribution
+
+```bash
+cd addon
+npm run package
+```
+
+This creates `addon/dist/TntConnectMailImport.zip` containing the built
+add-on files.
+
 ### Native host
 
 ```bash
@@ -46,18 +58,18 @@ UCanAccess).
 
 1. Copy the shell wrapper and JAR to a permanent location:
 
-   ```bash
-   sudo cp native-host/tntconnect-native-host /usr/local/bin/
-   sudo cp native-host/target/tntconnect-native-host.jar /usr/local/lib/
-   ```
+    ```bash
+    sudo cp native-host/tntconnect-native-host /usr/local/bin/
+    sudo cp native-host/target/tntconnect-native-host.jar /usr/local/lib/
+    ```
 
 2. Copy the manifest to the Thunderbird native messaging hosts
    directory:
 
-   ```bash
-   mkdir -p ~/.mozilla/native-messaging-hosts/
-   cp native-host/native-manifest.json ~/.mozilla/native-messaging-hosts/tntconnect_mail_import.json
-   ```
+    ```bash
+    mkdir -p ~/.mozilla/native-messaging-hosts/
+    cp native-host/native-manifest.json ~/.mozilla/native-messaging-hosts/tntconnect_mail_import.json
+    ```
 
 3. Update `path` in the manifest if the wrapper/JAR are installed
    elsewhere.
@@ -67,7 +79,7 @@ UCanAccess).
 1. Open Thunderbird → Menu → Add-ons and Themes → Settings (gear) →
    Debug Add-ons
 2. Click "Load Temporary Add-on"
-3. Select `addon/dist/manifest.json`
+3. Select `addon/public/manifest.json`
 
 ## Usage
 

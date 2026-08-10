@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "author": "Eberhard Beilharz",
+  "name": "TntConnect Mail Import",
+  "description": "Import emails from Thunderbird into TntConnect",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ermshiperete.tntconnect-mail-import@addons.thunderbird.net"
+    }
+  },
+  "background": {
+    "scripts": ["tntConnectBackground.js"],
+    "type": "module"
+  },
+  "permissions": [
+    "accountsRead",
+    "menus",
+    "messagesRead",
+    "nativeMessaging",
+    "notifications"
+  ]
+}

@@ -13,7 +13,7 @@ import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DbIntegrationTest {
+public class DbIntegrationTests {
     @Test
     void findContactByEmailWithKnownAddress(@TempDir Path tempDir) throws Exception {
         Path dbPath = tempDir.resolve("integration.mpddb");

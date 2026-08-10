@@ -52,4 +52,10 @@ describe('bodyCleaner', () => {
     const result = cleanBody(input);
     expect(result).toBe('Hello');
   });
+
+  it('strips warning header', () => {
+    const input = 'Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>\r\nLiebe Doe,';
+    const result = cleanBody(input);
+    expect(result).toBe('Liebe Doe,');
+  });
 });

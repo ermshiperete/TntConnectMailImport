@@ -12,7 +12,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HistoryManagerTest {
+public class HistoryManagerTests {
     @Test
     void createHistoryInsertsRow(@TempDir Path tempDir) throws Exception {
         Path dbPath = tempDir.resolve("test.mpddb");

@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class NativeProtocolTest {
+public class NativeProtocolTests {
     @Test
     void readMessageReadsLengthPrefixedJson(@TempDir Path tempDir) throws Exception {
         Path file = tempDir.resolve("test.bin");

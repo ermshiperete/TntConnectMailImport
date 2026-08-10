@@ -21,7 +21,7 @@ vi.stubGlobal('browser', {
   }
 });
 
-import { sendImportRequest, NativeClientError } from '@src/api/native';
+import { sendImportRequest, NativeClientError } from '@src/api/native.js';
 
 describe('nativeClient', () => {
   beforeEach(() => {
@@ -84,7 +84,7 @@ describe('nativeClient', () => {
     });
 
     const disconnectHandler = mockPort.onDisconnect.addListener.mock.calls[0][0];
-    disconnectHandler(new Error('Native host disconnected'));
+    disconnectHandler({ error: new Error('Native host disconnected') });
 
     await expect(promise).rejects.toThrow(NativeClientError);
   });

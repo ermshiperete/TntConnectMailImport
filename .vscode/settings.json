@@ -23,7 +23,10 @@
 		"titleBar.activeBackground": "#57f2d8",
 		"titleBar.activeForeground": "#15202b",
 		"titleBar.inactiveBackground": "#57f2d899",
-		"titleBar.inactiveForeground": "#15202b99"
+		"titleBar.inactiveForeground": "#15202b99",
+		"tab.activeBorder": "#86f6e3"
 	},
-	"peacock.color": "#57f2d8"
+	"peacock.color": "#57f2d8",
+	"vitest.cliArguments": "",
+	"vitest.rootConfig": "addon"
 }

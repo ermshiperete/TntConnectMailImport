@@ -1,52 +1,95 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { initBackground } from '@src/tntConnectBackground.js';
 
-const mockMenusCreate = vi.fn();
+const mockMenusCreate = vi.fn((_createData: any, callback: () => void) => {
+    Promise.resolve().then(callback);
+    return 'mock-menu-id';
+});
+
 const mockMenusOnClicked = {
   addListener: vi.fn()
 };
 
 const mockNotificationsCreate = vi.fn();
 
+const mockBrowser = {
+  runtime: {
+    onInstalled: {
+      addListener: vi.fn()
+    },
+    onStartup: {
+      addListener: vi.fn()
+    }
+  },
+  menus: {
+    create: mockMenusCreate,
+    onClicked: mockMenusOnClicked
+  },
+  notifications: {
+    create: mockNotificationsCreate
+  },
+  accounts: {
+    list: vi.fn().mockResolvedValue([{ identities: [{ email: 'me@example.com' }] }])
+  },
+  messages: {
+    getFull: vi.fn(),
+    get: vi.fn()
+  },
+  messengerUtilities: {
+    listInlineTextParts: vi.fn(),
+    convertToPlainText: vi.fn()
+  },
+  identities: {
+    get: vi.fn()
+  }
+};
+
+const mockMessenger = {
+  accounts: {
+    list: vi.fn().mockResolvedValue([])
+  }
+};
+
+vi.stubGlobal('browser', mockBrowser);
+vi.stubGlobal('messenger', mockMessenger);
+
 describe('background', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    globalThis.browser = {
-      runtime: {
-        onInstalled: {
-          addListener: vi.fn()
-        }
-      },
-      menus: {
-        create: mockMenusCreate,
-        onClicked: mockMenusOnClicked
-      },
-      notifications: {
-        create: mockNotificationsCreate
-      },
-      accounts: {
-        list: vi.fn().mockResolvedValue([{ identities: [{ email: 'me@example.com' }] }])
-      }
-    };
   });
 
   it('creates context menu on install', async () => {
-    const { default: initBackground } = await import('@src/background.ts');
-    initBackground();
+    await initBackground();
 
-    const installHandler = globalThis.browser.runtime.onInstalled.addListener.mock.calls[0][0];
+    const installHandler = mockBrowser.runtime.onInstalled.addListener.mock.calls[0][0];
     await installHandler({ reason: 'install' });
 
     expect(mockMenusCreate).toHaveBeenCalled();
   });
 
-  it('orchestrates extract, clean, send, and notify on click', async () => {
-    const { default: initBackground } = await import('@src/background.ts');
+  it('creates context menu on startup', async () => {
     initBackground();
 
-    const clickHandler = globalThis.browser.menus.onClicked.addListener.mock.calls[0][0];
+    const startupHandler = mockBrowser.runtime.onStartup.addListener.mock.calls[0][0];
+    await startupHandler();
+
+    expect(mockMenusCreate).toHaveBeenCalled();
+  });
+
+  it('orchestrates extract, clean, send, and notify on click', async () => {
+    initBackground();
+
+    const clickHandler = mockBrowser.menus.onClicked.addListener.mock.calls[0][0];
 
     const mockInfo = {
-      messageId: 'msg1'
+      selectedMessages: {
+        messages: [{
+          id: 'msg1',
+          author: 'john@example.com',
+          subject: 'Hello',
+          date: '2024-01-01T00:00:00.000Z'
+        }]
+      }
     };
 
     const mockTab = {
@@ -81,13 +124,19 @@ describe('background', () => {
   });
 
   it('shows error notification on contact not found', async () => {
-    const { default: initBackground } = await import('@src/background.ts');
     initBackground();
 
-    const clickHandler = globalThis.browser.menus.onClicked.addListener.mock.calls[0][0];
+    const clickHandler = mockBrowser.menus.onClicked.addListener.mock.calls[0][0];
 
     const mockInfo = {
-      messageId: 'msg1'
+      selectedMessages: {
+        messages: [{
+          id: 'msg1',
+          author: 'john@example.com',
+          subject: 'Hello',
+          date: '2024-01-01T00:00:00.000Z'
+        }]
+      }
     };
 
     const mockTab = {
@@ -110,4 +159,5 @@ describe('background', () => {
       })
     );
   });
+
 });

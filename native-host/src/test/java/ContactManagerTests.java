@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ContactManagerTest {
+public class ContactManagerTests {
     @Test
     void findContactByEmailExactMatch(@TempDir Path tempDir) throws Exception {
         Path dbPath = tempDir.resolve("test.mpddb");
