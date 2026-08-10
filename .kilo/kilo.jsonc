@@ -1,0 +1,9 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "permission": {
+    "bash": {
+      "mvn -version": "allow",
+      "mvn test *": "allow",
+    }
+  }
+}
