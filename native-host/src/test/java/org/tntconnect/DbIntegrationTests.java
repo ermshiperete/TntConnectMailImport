@@ -1,8 +1,6 @@
 package org.tntconnect;
 
 import models.Contact;
-import org.tntconnect.ContactManager;
-import org.tntconnect.HistoryManager;
 import models.ImportRequest;
 import models.ImportResponse;
 import org.junit.jupiter.api.Test;

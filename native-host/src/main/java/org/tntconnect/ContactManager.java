@@ -1,9 +1,14 @@
 package org.tntconnect;
 
-import models.Contact;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+
+import models.Contact;
 
 public class ContactManager {
     private final Connection connection;
@@ -13,7 +18,7 @@ public class ContactManager {
     }
 
     public Contact findContactByEmail(String email) throws SQLException {
-        String sql = "SELECT ContactID, Email1, Email2, Email3, SpouseEmail1, SpouseEmail2, SpouseEmail3, LastEdit, LastLetterDate FROM Contact WHERE ";
+        String sql = "SELECT ContactID, Email1, Email2, Email3, SpouseEmail1, SpouseEmail2, SpouseEmail3, LastEdit, LastLetter FROM Contact WHERE ";
         String[] fields = {"Email1", "Email2", "Email3", "SpouseEmail1", "SpouseEmail2", "SpouseEmail3"};
         List<String> conditions = new ArrayList<>();
         for (String field : fields) {
@@ -37,13 +42,13 @@ public class ContactManager {
             contact.setSpouseEmail1(rs.getString("SpouseEmail1"));
             contact.setSpouseEmail2(rs.getString("SpouseEmail2"));
             contact.setSpouseEmail3(rs.getString("SpouseEmail3"));
-            Timestamp lastEdit = rs.getTimestamp("LastEdit");
+            java.sql.Timestamp lastEdit = rs.getTimestamp("LastEdit");
             if (lastEdit != null) {
-                contact.setLastEdit(lastEdit.toLocalDateTime());
+                contact.setLastEdit(lastEdit.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
             }
-            Timestamp lastLetterDate = rs.getTimestamp("LastLetterDate");
-            if (lastLetterDate != null) {
-                contact.setLastLetterDate(lastLetterDate.toLocalDateTime());
+            java.sql.Timestamp lastLetter = rs.getTimestamp("LastLetter");
+            if (lastLetter != null) {
+                contact.setLastLetterDate(lastLetter.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
             }
             matches.add(contact);
         }

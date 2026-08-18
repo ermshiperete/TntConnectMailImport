@@ -71,13 +71,6 @@ UCanAccess).
     cp native-host/native-manifest.json ~/.mozilla/native-messaging-hosts/tntconnect_mail_import.json
     ```
 
-    If you run Thunderbird as flatpak, use these commands:
-
-    ```bash
-    mkdir -p ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts
-    cp native-host/native-manifest.json ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts/tntconnect_mail_import.json
-    ```
-
 3. Update `path` in the manifest if the wrapper/JAR are installed
    elsewhere.
 
@@ -87,6 +80,19 @@ UCanAccess).
    Debug Add-ons
 2. Click "Load Temporary Add-on"
 3. Select `addon/public/manifest.json`
+
+### Thunderbird as flatpak
+
+When running Thunderbird as a flatpak, there are a few additonal steps
+required:
+
+```bash
+mkdir -p ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts
+cp native-host/native-manifest.json ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts/tntconnect_mail_import.json
+```
+
+In the Thunderbird Config Editor (Edit/Settings/General/Config Editor), set
+`widget.use-xdg-desktop-portal.native-messaging` to `1`.
 
 ## Usage
 

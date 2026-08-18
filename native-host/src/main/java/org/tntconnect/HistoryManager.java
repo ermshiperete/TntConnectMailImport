@@ -1,14 +1,18 @@
 package org.tntconnect;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Random;
+
 import models.Contact;
 import models.ImportRequest;
 import models.ImportResponse;
-
-import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Random;
 
 public class HistoryManager {
     private final Connection connection;
@@ -37,18 +41,44 @@ public class HistoryManager {
         return exists;
     }
 
+    private int getLoggedByUserId(String userName) throws SQLException {
+        if (userName != null && !userName.isEmpty()) {
+            String sql = "SELECT UserID FROM User WHERE UserName = ? AND IsActive = true";
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, userName);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("UserID");
+                    }
+                }
+            }
+        }
+
+        // Fallback: first active user
+        String fallbackSql = "SELECT UserID FROM User WHERE IsActive = true ORDER BY UserID";
+        try (java.sql.Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(fallbackSql)) {
+            if (rs.next()) {
+                return rs.getInt("UserID");
+            }
+        }
+
+        throw new SQLException("No active user found in User table.");
+    }
+
     public ImportResponse createHistory(ImportRequest request, Contact contact) {
         ImportResponse response = new ImportResponse();
         try {
             connection.setAutoCommit(false);
 
             int historyId = getAvailableId();
+            int loggedByUserId = getLoggedByUserId(request.getDbUser());
 
             String duplicateCheck = "SELECT COUNT(*) FROM History h JOIN HistoryContact hc ON h.HistoryID = hc.HistoryID WHERE hc.ContactID = ? AND h.TaskTypeID = ? AND h.HistoryDate = ? AND h.HistoryResultID = ?";
             PreparedStatement dupStmt = connection.prepareStatement(duplicateCheck);
             dupStmt.setInt(1, contact.getContactId());
             dupStmt.setInt(2, 100);
-            dupStmt.setTimestamp(3, Timestamp.from(OffsetDateTime.parse(request.getDate()).toInstant()));
+            dupStmt.setTimestamp(3, new java.sql.Timestamp(OffsetDateTime.parse(request.getDate()).toInstant().toEpochMilli()));
             dupStmt.setInt(4, "received".equals(request.getDirection()) ? 2 : 1);
             ResultSet dupRs = dupStmt.executeQuery();
             boolean isDuplicate = dupRs.next() && dupRs.getInt(1) > 0;
@@ -67,11 +97,11 @@ public class HistoryManager {
             historyStmt.setInt(1, historyId);
             historyStmt.setInt(2, 100);
             historyStmt.setString(3, truncate(request.getSubject(), 147));
-            historyStmt.setTimestamp(4, Timestamp.from(OffsetDateTime.parse(request.getDate()).toInstant()));
+            historyStmt.setTimestamp(4, new java.sql.Timestamp(OffsetDateTime.parse(request.getDate()).toInstant().toEpochMilli()));
             historyStmt.setString(5, request.getBody());
             historyStmt.setInt(6, "received".equals(request.getDirection()) ? 2 : 1);
-            historyStmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now()));
-            historyStmt.setInt(8, 0);
+            historyStmt.setTimestamp(7, new java.sql.Timestamp(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
+            historyStmt.setInt(8, loggedByUserId);
             historyStmt.setBoolean(9, false);
             historyStmt.setBoolean(10, false);
             historyStmt.setBoolean(11, false);
@@ -90,10 +120,10 @@ public class HistoryManager {
             hcStmt.close();
 
             if ("received".equals(request.getDirection())) {
-                String updateContact = "UPDATE Contact SET LastLetterDate = ?, LastEdit = ? WHERE ContactID = ?";
+                String updateContact = "UPDATE Contact SET LastLetter = ?, LastEdit = ? WHERE ContactID = ?";
                 PreparedStatement contactStmt = connection.prepareStatement(updateContact);
-                contactStmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-                contactStmt.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                contactStmt.setTimestamp(1, new java.sql.Timestamp(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
+                contactStmt.setTimestamp(2, new java.sql.Timestamp(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
                 contactStmt.setInt(3, contact.getContactId());
                 contactStmt.executeUpdate();
                 contactStmt.close();
@@ -103,6 +133,7 @@ public class HistoryManager {
             response.setSuccess(true);
             response.setHistoryId(historyId);
         } catch (Exception e) {
+            System.err.println("Got exception trying to insert/update history: " + e.getMessage());
             try {
                 connection.rollback();
             } catch (SQLException ex) {

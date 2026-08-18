@@ -1,3 +1,6 @@
 #!/bin/bash
-DIR="$(cd "$(dirname "$0")" && pwd)"
-java -jar "$DIR/tntconnect-native-host.jar" "$@"
+JAR_DIR="/usr/local/lib"
+java -jar "$JAR_DIR/tntconnect-native-host.jar" "$@"
+#java \
+#  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
+#  -jar "$JAR_DIR/tntconnect-native-host.jar" "$@"

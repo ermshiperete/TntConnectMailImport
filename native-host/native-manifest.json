@@ -4,6 +4,6 @@
   "path": "/usr/local/bin/tntconnect-native-host",
   "type": "stdio",
   "allowed_extensions": [
-    "{e1a5e5e0-ea00-11e9-81f4-2a2ae2dbcce4}"
+    "ermshiperete.tntconnect-mail-import@addons.thunderbird.net"
   ]
 }

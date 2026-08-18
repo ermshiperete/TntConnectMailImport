@@ -13,9 +13,10 @@ public class NativeProtocolTests {
     void readMessageReadsLengthPrefixedJson(@TempDir Path tempDir) throws Exception {
         Path file = tempDir.resolve("test.bin");
         String json = "{\"test\":true}";
+        byte[] jsonBytes = json.getBytes("UTF-8");
         try (FileOutputStream fos = new FileOutputStream(file.toFile())) {
-            fos.write(new byte[] {0, 0, 0, (byte) (json.getBytes("UTF-8").length)});
-            fos.write(json.getBytes("UTF-8"));
+            fos.write(new byte[] {(byte) (jsonBytes.length), 0, 0, 0});
+            fos.write(jsonBytes);
         }
 
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
@@ -35,7 +36,7 @@ public class NativeProtocolTests {
 
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
             byte[] lengthBytes = fis.readNBytes(4);
-            int length = ((lengthBytes[0] & 0xFF) << 24) | ((lengthBytes[1] & 0xFF) << 16) | ((lengthBytes[2] & 0xFF) << 8) | (lengthBytes[3] & 0xFF);
+            int length = (lengthBytes[0] & 0xFF) | ((lengthBytes[1] & 0xFF) << 8) | ((lengthBytes[2] & 0xFF) << 16) | ((lengthBytes[3] & 0xFF) << 24);
             byte[] messageBytes = fis.readNBytes(length);
             String result = new String(messageBytes, "UTF-8");
             assertEquals(json, result);

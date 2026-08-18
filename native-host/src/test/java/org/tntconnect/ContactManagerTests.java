@@ -1,13 +1,11 @@
 package org.tntconnect;
 
 import models.Contact;
-import org.tntconnect.ContactManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.sql.*;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

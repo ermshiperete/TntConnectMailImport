@@ -1,9 +1,9 @@
 package org.tntconnect;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 public class NativeProtocol {
     public static String readMessage(InputStream in) throws IOException {
@@ -11,7 +11,7 @@ public class NativeProtocol {
         if (lengthBytes.length < 4) {
             throw new EOFException("Could not read message length");
         }
-        int length = ByteBuffer.wrap(lengthBytes).order(ByteOrder.BIG_ENDIAN).getInt();
+        int length = ByteBuffer.wrap(lengthBytes).order(ByteOrder.nativeOrder()).getInt();
         if (length <= 0) {
             throw new IOException("Invalid message length: " + length);
         }
@@ -19,12 +19,12 @@ public class NativeProtocol {
         if (messageBytes.length < length) {
             throw new EOFException("Could not read full message");
         }
-        return new String(messageBytes, "UTF-8");
+        return new String(messageBytes, StandardCharsets.UTF_8);
     }
 
     public static void writeMessage(OutputStream out, String message) throws IOException {
-        byte[] messageBytes = message.getBytes("UTF-8");
-        ByteBuffer buffer = ByteBuffer.allocate(4 + messageBytes.length).order(ByteOrder.BIG_ENDIAN);
+        byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
+        ByteBuffer buffer = ByteBuffer.allocate(4 + messageBytes.length).order(ByteOrder.nativeOrder());
         buffer.putInt(messageBytes.length);
         buffer.put(messageBytes);
         out.write(buffer.array());

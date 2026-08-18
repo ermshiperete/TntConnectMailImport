@@ -1,15 +1,47 @@
 package org.tntconnect;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+
 import models.Contact;
 import models.ImportRequest;
 import models.ImportResponse;
 
-import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-
 public class Main {
+    static {
+        // Suppress Jackcess/Commons-Logging/UCanAccess warnings as early as possible
+        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
+        System.setProperty("org.apache.commons.logging.simplelog.defaultlog", "fatal");
+
+        // Redirect System.err to filter out the annoying Jackcess warning about default values
+        PrintStream originalErr = System.err;
+        System.setErr(new PrintStream(new OutputStream() {
+            private StringBuilder line = new StringBuilder();
+            @Override
+            public void write(int b) throws IOException {
+                if (b == '\n') {
+                    String s = line.toString();
+                    if (!s.contains("Default values should start and end with a double quote") &&
+                        !s.contains("It may result in a data truncation error at runtime")) {
+                        originalErr.println(s);
+                    }
+                    line.setLength(0);
+                } else if (b != '\r') {
+                    line.append((char) b);
+                }
+            }
+        }));
+    }
+
     public static void main(String[] args) {
+        // Fix for HSQLDB 2.7+ security restriction
+        System.setProperty("hsqldb.method_class_names", "net.ucanaccess.converters.*");
+
         try {
             Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
         } catch (ClassNotFoundException e) {
@@ -49,7 +81,7 @@ public class Main {
         ImportResponse response = new ImportResponse();
         String url = "jdbc:ucanaccess://" + request.getDbPath() + ";immediatelyReleaseResources=true;openExclusive=true;";
 
-        try (Connection connection = DriverManager.getConnection(url)) {
+        try (Connection connection = DriverManager.getConnection(url, null, "tntMPD")) {
             ContactManager contactManager = new ContactManager(connection);
             HistoryManager historyManager = new HistoryManager(connection);
 
@@ -71,25 +103,37 @@ public class Main {
     private static ImportRequest parseRequest(String json) {
         ImportRequest request = new ImportRequest();
         try {
-            String[] pairs = json.replace("{", "").replace("}", "").split(",");
-            for (String pair : pairs) {
-                String[] kv = pair.trim().split(":", 2);
-                if (kv.length == 2) {
-                    String key = kv[0].replace("\"", "").trim();
-                    String value = kv[1].replace("\"", "").trim();
-                    switch (key) {
-                        case "action" -> request.setAction(value);
-                        case "dbPath" -> request.setDbPath(value);
-                        case "contactEmail" -> request.setContactEmail(value);
-                        case "subject" -> request.setSubject(value);
-                        case "body" -> request.setBody(value);
-                        case "date" -> request.setDate(value);
-                        case "direction" -> request.setDirection(value);
-                    }
+            // A more robust regex-based parser to handle quoted strings with special characters
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"(\\w+)\"\\s*:\\s*(\"(?:[^\"\\\\]++|\\\\.)*+\"|[^,{}]+)");
+            java.util.regex.Matcher matcher = pattern.matcher(json);
+            while (matcher.find()) {
+                String key = matcher.group(1);
+                String value = matcher.group(2);
+                if (value.startsWith("\"") && value.endsWith("\"")) {
+                    // Remove quotes and unescape common characters
+                    value = value.substring(1, value.length() - 1)
+                            .replace("\\\"", "\"")
+                            .replace("\\\\", "\\")
+                            .replace("\\r", "\r")
+                            .replace("\\n", "\n")
+                            .replace("\\t", "\t");
+                } else {
+                    value = value.trim();
+                }
+
+                switch (key) {
+                    case "action" -> request.setAction(value);
+                    case "dbPath" -> request.setDbPath(value);
+                    case "dbUser" -> request.setDbUser(value);
+                    case "contactEmail" -> request.setContactEmail(value);
+                    case "subject" -> request.setSubject(value);
+                    case "body" -> request.setBody(value);
+                    case "date" -> request.setDate(value);
+                    case "direction" -> request.setDirection(value);
                 }
             }
         } catch (Exception e) {
-            // ignore parse errors
+            System.err.println("Parse error: " + e.getMessage());
         }
         return request;
     }

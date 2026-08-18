@@ -9,7 +9,6 @@ async function getIdentityEmails(): Promise<string[]> {
   const identities: string[] = [];
   try {
     const accounts = await messenger.accounts.list();
-    console.log(`accounts=${JSON.stringify(accounts)}`);
     accounts.forEach((account) => {
       account.identities.forEach((identity) => {
         if (identity.email) {
@@ -24,42 +23,6 @@ async function getIdentityEmails(): Promise<string[]> {
 }
 
 async function handleMenuClick(info: any, tab: any) {
-  console.log(`info=${JSON.stringify(info)}, tab=${JSON.stringify(tab)}`);
-  /*
-  info={
-    "menuItemId":"import-to-tntconnect",
-    "parentMenuItemId":7,
-    "editable":false,
-    "selectedMessages":{
-      "id":null,
-      "messages":[{
-        "id":35,
-        "date":"2026-08-11T03:32:13.000Z",
-        "author":"Sentry <noreply@md.getsentry.com>",
-        "recipients":["eberhard_beilharz@sil.org"],"ccList":[],"bccList":[],
-        "subject":"KEYMAN-LINUX-C0 - TypeError: string indices must be integers, not 'str'",
-        "read":false,
-        "new":false,
-        "headersOnly":false,
-        "flagged":false,
-        "junk":false,
-        "junkScore":0,
-        "headerMessageId":"20260811033212.59.87540@md.getsentry.com",
-        "size":35287,"
-        tags":[],
-        "external":false
-      }]
-    },
-    "modifiers":[],
-    "button":0
-  },
-  tab={
-    "id":1,
-    "index":0,
-    "windowId":1,
-    "highlighted":true,
-    "active":true,"status":"complete","width":2247,"height":420,"groupId":-1,"cookieStoreId":"firefox-default","spaceId":1,"type":"mail","mailTab":true}
-    */
   if (!info?.selectedMessages?.messages) {
     return;
   }

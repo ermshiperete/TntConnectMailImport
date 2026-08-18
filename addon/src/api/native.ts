@@ -22,6 +22,7 @@ export class NativeClientError extends Error {
 }
 
 export async function sendImportRequest(request: ImportRequest): Promise<ImportResponse> {
+  console.log(`request=${JSON.stringify(request)}`);
   return new Promise((resolve, reject) => {
     const port = browser.runtime.connectNative('tntconnect_mail_import');
 

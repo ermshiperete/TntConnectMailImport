@@ -35,7 +35,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>Main</mainClass>
+                  <mainClass>org.tntconnect.Main</mainClass>
                 </transformer>
               </transformers>
               <outputFile>${project.build.directory}/tntconnect-native-host.jar</outputFile>
@@ -46,12 +46,6 @@
     </plugins>
   </build>
   <dependencies>
-    <dependency>
-      <groupId>org.hsqldb</groupId>
-      <artifactId>hsqldb</artifactId>
-      <version>2.7.3</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -90,10 +84,10 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.source>17</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>17</maven.compiler.target>
     <junit.version>5.10.2</junit.version>
     <ucanaccess.version>5.0.1</ucanaccess.version>
+    <maven.compiler.source>17</maven.compiler.source>
   </properties>
 </project>

@@ -26,8 +26,7 @@
     <dependency>
       <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
-      <version>2.7.3</version>
-      <scope>test</scope>
+      <version>2.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -77,7 +76,7 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>Main</mainClass>
+                  <mainClass>org.tntconnect.Main</mainClass>
                 </transformer>
               </transformers>
               <outputFile>${project.build.directory}/tntconnect-native-host.jar</outputFile>

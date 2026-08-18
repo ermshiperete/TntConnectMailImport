@@ -8,6 +8,8 @@ public class ImportRequest {
     private String body;
     private String date;
     private String direction;
+    private String dbUser;
+    private String dbPassword;
 
     public String getAction() {
         return action;
@@ -63,5 +65,21 @@ public class ImportRequest {
 
     public void setDirection(String direction) {
         this.direction = direction;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public void setDbUser(String dbUser) {
+        this.dbUser = dbUser;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public void setDbPassword(String dbPassword) {
+        this.dbPassword = dbPassword;
     }
 }
