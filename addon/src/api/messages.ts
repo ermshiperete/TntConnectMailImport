@@ -1,56 +1,64 @@
-import { cleanBody } from '@src/cleaner/bodyCleaner.ts';
+import { cleanBody } from '@src/cleaner/bodyCleaner.js';
 
 export interface ExtractedMessage {
-  author: string;
-  subject: string;
   date: Date;
   body: string;
-  direction: 'sent' | 'received';
 }
 
-export function getMessageAuthor(messageAuthor: string, identityEmail: string): 'sent' | 'received' {
-  if (!messageAuthor || !identityEmail) {
+export function getMessageDirection(messageAuthor: string, identityEmails: string[]): 'sent' | 'received' {
+  if (!messageAuthor || !identityEmails) {
     return 'received';
   }
 
   const emailMatch = messageAuthor.match(/<(.+?)>/);
   const authorEmail = emailMatch ? emailMatch[1].toLowerCase() : messageAuthor.toLowerCase();
 
-  if (authorEmail === identityEmail.toLowerCase()) {
-    return 'sent';
-  }
-
-  return 'received';
+  const isSent = identityEmails.some((email: string) => authorEmail === email.toLowerCase());
+  return isSent ? 'sent' : 'received';
 }
 
-export async function extractMessage(messageId: string, identityEmail: string): Promise<ExtractedMessage> {
-  const fullMessage = await browser.messages.getFull(messageId);
-  const author = fullMessage.author;
-  const subject = fullMessage.subject;
-  const date = new Date(fullMessage.date);
-
-  let body: string;
-
-  try {
-    const parts = await browser.messengerUtilities.listInlineTextParts(messageId);
-    if (parts.length > 0) {
-      body = await browser.messengerUtilities.convertToPlainText(parts);
-    } else {
-      body = await browser.messengerUtilities.convertToPlainText(fullMessage.parts);
-    }
-  } catch {
-    body = '';
+async function getBodyFromBody(part: messenger.messages.MessagePart): Promise<{body: string, contentType: string}> {
+  let body = '';
+  if (!part.body) {
+    return { body, contentType: '' };
   }
-
-  body = cleanBody(body);
-
-  const direction = getMessageAuthor(author, identityEmail);
-
+  // ideally we want to use the text/plain part
+  if (part.contentType && part.contentType === 'text/plain') {
+    body = part.body;
+  } else {
+    // Otherwise we use what we can get
+    body = await browser.messengerUtilities.convertToPlainText(part.body);
+  }
   return {
-    author,
-    subject,
-    date,
     body,
-    direction
+    contentType: part.contentType ?? ''
   };
+}
+
+async function getBodyFromPart(part: messenger.messages.MessagePart): Promise<string> {
+  let body = '';
+  if (part.body) {
+    return getBodyFromBody(part).then(result => result.body);
+  } else if (part.parts) {
+    for (let i = 0; i < part.parts.length; i++) {
+      const childPart = part.parts[i];
+      if (childPart.body) {
+        const { body: childBody, contentType } = await getBodyFromBody(childPart);
+        body = childBody;
+        if (contentType === 'text/plain') {
+          break;
+        }
+      } else {
+        body = await getBodyFromPart(childPart);
+      }
+    }
+  }
+  return body;
+}
+
+export async function extractMessage(messageId: number): Promise<string> {
+  const fullMessage: messenger.messages.MessagePart = await browser.messages.getFull(messageId);
+
+  let body = await getBodyFromPart(fullMessage);
+  return cleanBody(body);
 }

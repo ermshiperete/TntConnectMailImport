@@ -24,20 +24,30 @@ export async function sendImportRequest(request: ImportRequest): Promise<ImportR
   return new Promise((resolve, reject) => {
     const port = browser.runtime.connectNative('tntconnect_mail_import');
 
-    const messageHandler = (response: ImportResponse) => {
-      port.onMessage.removeListener(messageHandler);
-      port.onDisconnect.removeListener(disconnectHandler);
-      resolve(response);
+    if (port.error) {
+      console.error(`Failed to connect to native host: ${port.error.message}`);
+      reject(new NativeClientError(port.error.message));
+      return;
+    }
+
+    const messageHandler = (response: unknown) => {
+      (port as any).onMessage.removeListener(messageHandler);
+      (port as any).onDisconnect.removeListener(disconnectHandler);
+      resolve(response as ImportResponse);
     };
 
-    const disconnectHandler = (error: Error) => {
-      port.onMessage.removeListener(messageHandler);
-      port.onDisconnect.removeListener(disconnectHandler);
-      reject(new NativeClientError(error.message || 'Native host disconnected'));
+    const disconnectHandler = (port: any) => {
+      if (port.onMessage) {
+        port.onMessage.removeListener(messageHandler);
+      }
+      if (port.onDisconnect) {
+        port.onDisconnect.removeListener(disconnectHandler);
+      }
+      reject(new NativeClientError((port as any).error?.message || 'Native host disconnected'));
     };
 
-    port.onMessage.addListener(messageHandler);
-    port.onDisconnect.addListener(disconnectHandler);
+    (port as any).onMessage.addListener(messageHandler);
+    (port as any).onDisconnect.addListener(disconnectHandler);
 
     port.postMessage({
       action: 'importEmail',

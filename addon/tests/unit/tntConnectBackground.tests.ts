@@ -97,13 +97,7 @@ describe('background', () => {
     };
 
     const mockExtract = await import('@src/api/messages.ts');
-    vi.spyOn(mockExtract, 'extractMessage').mockResolvedValue({
-      author: 'john@example.com',
-      subject: 'Hello',
-      date: new Date('2024-01-01'),
-      body: 'Message body',
-      direction: 'received'
-    });
+    vi.spyOn(mockExtract, 'extractMessage').mockResolvedValue('Message body');
 
     const mockNative = await import('@src/api/native.ts');
     vi.spyOn(mockNative, 'sendImportRequest').mockResolvedValue({

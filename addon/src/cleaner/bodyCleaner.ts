@@ -1,10 +1,22 @@
 export function cleanBody(body: string): string {
-  if (!body) return '';
+  if (!body) {
+    return '';
+  }
 
   let cleaned = body;
 
-  const replyHeaderPattern = /^On\s.+wrote:\s*$/m;
-  cleaned = cleaned.replace(replyHeaderPattern, '');
+  const replyHeaderPatterns = [
+    /^On[\s\S]*?\bwrote:[\s\S]*$/m,
+    /^Am[\s\S]*?\bschrieb[\s\S]*$/m
+  ];
+
+  for (const pattern of replyHeaderPatterns) {
+    const match = pattern.exec(cleaned);
+    if (match) {
+      cleaned = cleaned.replace(pattern, '');
+      break;
+    }
+  }
 
   const signaturePatterns = [
     /^-- $/m,
@@ -16,6 +28,12 @@ export function cleanBody(body: string): string {
     if (match) {
       cleaned = cleaned.slice(0, match.index);
     }
+  }
+
+  const warningHeaderPattern = /^Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von [^@]+@(\w|\.)+\. Erfahren Sie, warum dies wichtig ist<https:\/\/aka\.ms\/LearnAboutSenderIdentification>\s+/m;
+  const warningMatch = warningHeaderPattern.exec(cleaned);
+  if (warningMatch) {
+    cleaned = cleaned.replace(warningHeaderPattern, '');
   }
 
   const lines = cleaned.split('\n');
