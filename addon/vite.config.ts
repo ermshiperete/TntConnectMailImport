@@ -8,9 +8,11 @@ export default defineConfig({
     minify: isDebug ? false : undefined,
     sourcemap: isDebug ? 'inline' : undefined,
     outDir: 'dist',
-    emptyDirFirst: true,
     rollupOptions: {
-      input: resolve(__dirname, 'src/tntConnectBackground.ts'),
+      input: {
+        tntConnectBackground: resolve(__dirname, 'src/tntConnectBackground.ts'),
+        options: resolve(__dirname, 'src/options.ts')
+      },
       output: {
         entryFileNames: '[name].js',
         chunkFileNames: 'chunks/[name]-[hash].js',

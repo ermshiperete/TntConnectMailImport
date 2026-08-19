@@ -1,5 +1,6 @@
 export interface ImportRequest {
   dbPath: string;
+  dbUser: string;
   contactEmail: string;
   subject: string;
   body: string;

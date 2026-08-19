@@ -1,6 +1,7 @@
 import { extractMessage, getMessageDirection } from '@src/api/messages.js';
 import { sendImportRequest } from '@src/api/native.js';
 import { addEntry } from '@src/modules/menu.js';
+import { getSettings } from '@src/modules/settings.js';
 
 const MAX_BODY_LENGTH = 200_000;
 
@@ -68,6 +69,7 @@ async function handleMenuClick(info: any, tab: any) {
       const identityEmails = await getIdentityEmails();
       const direction = await getMessageDirection(email.author, identityEmails);
       const message = await extractMessage(messageId);
+      const settings = await getSettings();
 
       function extractEmail(author: string): string {
         const match = author.match(/<([^>]+)>/);
@@ -75,7 +77,8 @@ async function handleMenuClick(info: any, tab: any) {
       }
 
       const request = {
-        dbPath: '',
+        dbPath: settings.databasePath,
+        dbUser: settings.dbUser,
         contactEmail: extractEmail(email.author),
         subject: email.subject,
         body: message.slice(0, MAX_BODY_LENGTH),

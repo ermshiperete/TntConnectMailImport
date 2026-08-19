@@ -71,6 +71,13 @@ UCanAccess).
     cp native-host/native-manifest.json ~/.mozilla/native-messaging-hosts/tntconnect_mail_import.json
     ```
 
+    If you run Thunderbird as flatpak, use these commands:
+
+    ```bash
+    mkdir -p ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts
+    cp native-host/native-manifest.json ~/.var/app/org.mozilla.thunderbird_esr/.thunderbird/native-messaging-hosts/tntconnect_mail_import.json
+    ```
+
 3. Update `path` in the manifest if the wrapper/JAR are installed
    elsewhere.
 

@@ -18,6 +18,11 @@
     "menus",
     "messagesRead",
     "nativeMessaging",
-    "notifications"
-  ]
+    "notifications",
+    "storage"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true
+  }
 }
