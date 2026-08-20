@@ -1,8 +1,6 @@
 package org.tntconnect;
 
 import models.Contact;
-import models.History;
-import models.HistoryContact;
 import models.ImportRequest;
 import models.ImportResponse;
 

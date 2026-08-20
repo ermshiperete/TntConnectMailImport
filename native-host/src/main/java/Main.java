@@ -3,12 +3,10 @@ package org.tntconnect;
 import models.Contact;
 import models.ImportRequest;
 import models.ImportResponse;
-import org.tntconnect.TntDatabase;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
@@ -52,7 +50,6 @@ public class Main {
         String url = "jdbc:ucanaccess://" + request.getDbPath() + ";immediatelyReleaseResources=true;openExclusive=true;";
 
         try (Connection connection = DriverManager.getConnection(url)) {
-            TntDatabase db = new TntDatabase(connection);
             ContactManager contactManager = new ContactManager(connection);
             HistoryManager historyManager = new HistoryManager(connection);
 
