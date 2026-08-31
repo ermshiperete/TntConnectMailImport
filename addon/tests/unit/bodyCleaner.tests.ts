@@ -58,4 +58,10 @@ describe('bodyCleaner', () => {
     const result = cleanBody(input);
     expect(result).toBe('Liebe Doe,');
   });
+
+  it('no match returns all', () => {
+    const input = 'Hello\n\nThis is a test email.';
+    const result = cleanBody(input);
+    expect(result).toBe('Hello\n\nThis is a test email.');
+  });
 });

@@ -69,6 +69,36 @@ describe('extractMessage tests', () => {
     expect(result).toBe('Hello Text');
   });
 
+  it('does not overwrite text/plain found in nested parts', async () => {
+    const mockMessage = {
+      author: 'John Doe <john@example.com>',
+      subject: 'Hello',
+      date: new Date('2024-01-01T12:00:00Z'),
+      parts: [
+        {
+          contentType: 'multipart/alternative',
+          parts: [
+            {
+              contentType: 'text/plain',
+              body: 'Hello Text from nested'
+            }
+          ]
+        },
+        {
+          contentType: 'text/html',
+          body: '<p>Hello Html</p>'
+        }
+      ]
+    };
+
+    mockBrowser.messages.getFull.mockResolvedValue(mockMessage);
+    mockBrowser.messengerUtilities.convertToPlainText.mockResolvedValue('Hello Html');
+
+    const result = await extractMessage('msg1');
+
+    expect(result).toBe('Hello Text from nested');
+  });
+
   it('falls back to other text if no plain text', async () => {
     const mockMessage = {
       author: 'John Doe <john@example.com>',

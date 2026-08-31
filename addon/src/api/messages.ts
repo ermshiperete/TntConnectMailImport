@@ -17,7 +17,12 @@ export function getMessageDirection(messageAuthor: string, identityEmails: strin
   return isSent ? 'sent' : 'received';
 }
 
-async function getBodyFromBody(part: messenger.messages.MessagePart): Promise<{body: string, contentType: string}> {
+interface BodyResult {
+  body: string;
+  contentType: string;
+}
+
+async function getBodyFromBody(part: messenger.messages.MessagePart): Promise<BodyResult> {
   let body = '';
   if (!part.body) {
     return { body, contentType: '' };
@@ -35,30 +40,35 @@ async function getBodyFromBody(part: messenger.messages.MessagePart): Promise<{b
   };
 }
 
-async function getBodyFromPart(part: messenger.messages.MessagePart): Promise<string> {
+async function getBodyFromPart(part: messenger.messages.MessagePart): Promise<BodyResult> {
   let body = '';
+  let contentType = '';
   if (part.body) {
-    return getBodyFromBody(part).then(result => result.body);
+    return getBodyFromBody(part);
   } else if (part.parts) {
+    let result: BodyResult;
     for (let i = 0; i < part.parts.length; i++) {
       const childPart = part.parts[i];
       if (childPart.body) {
-        const { body: childBody, contentType } = await getBodyFromBody(childPart);
-        body = childBody;
-        if (contentType === 'text/plain') {
-          break;
-        }
+        result = await getBodyFromBody(childPart);
       } else {
-        body = await getBodyFromPart(childPart);
+        result = await getBodyFromPart(childPart);
+      }
+      if (result.contentType === 'text/plain') {
+        return result;
+      }
+      if (!body) {
+        body = result.body;
+        contentType = result.contentType;
       }
     }
   }
-  return body;
+  return { body, contentType };
 }
 
 export async function extractMessage(messageId: number): Promise<string> {
   const fullMessage: messenger.messages.MessagePart = await browser.messages.getFull(messageId);
 
-  let body = await getBodyFromPart(fullMessage);
-  return cleanBody(body);
+  const result = await getBodyFromPart(fullMessage);
+  return cleanBody(result.body);
 }
