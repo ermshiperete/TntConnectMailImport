@@ -34,6 +34,7 @@ async function handleMenuClick(info: any, tab: any) {
 
   const results: Array<{ email: string; success: boolean; historyId?: number; error?: string }> = [];
 
+  let addresses: string[] = [];
   for (const email of info.selectedMessages.messages) {
     try {
       const messageId = email.id;
@@ -42,26 +43,29 @@ async function handleMenuClick(info: any, tab: any) {
       const message = await extractMessage(messageId);
       const settings = await getSettings();
 
-      const request = {
-        dbPath: settings.databasePath,
-        dbUser: settings.dbUser,
-        contactEmail: extractEmail(email.author),
-        subject: email.subject,
-        body: message.slice(0, MAX_BODY_LENGTH),
-        date: new Date(email.date).toISOString(),
-        direction: direction
-      };
+      addresses = direction == 'sent' ? email.recipients : [email.author];
+      for (const emailAddress of addresses) {
+        const request = {
+          dbPath: settings.databasePath,
+          dbUser: settings.dbUser,
+          contactEmail: extractEmail(emailAddress),
+          subject: email.subject,
+          body: message.slice(0, MAX_BODY_LENGTH),
+          date: new Date(email.date).toISOString(),
+          direction: direction
+        };
 
-      const result = await sendImportRequest(request);
+        const result = await sendImportRequest(request);
 
-      if (result.success) {
-        results.push({ email: extractEmail(email.author), success: true, historyId: result.historyId });
-      } else {
-        results.push({ email: extractEmail(email.author), success: false, error: result.error || 'Unknown error' });
-        console.warn(`Failed to import email from ${email.author}: ${result.error}`);
+        if (result.success) {
+          results.push({ email: extractEmail(emailAddress), success: true, historyId: result.historyId });
+        } else {
+          results.push({ email: extractEmail(emailAddress), success: false, error: result.error || 'Unknown error' });
+          console.warn(`Failed to import email from ${email.author}: ${result.error}`);
+        }
       }
     } catch (error) {
-      results.push({ email: extractEmail(email.author), success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      results.push({ email: extractEmail(addresses[0]), success: false, error: error instanceof Error ? error.message : 'Unknown error' });
       console.error(`Error occurred while importing email from ${email.author}:`, error);
     }
   }
