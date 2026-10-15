@@ -26,6 +26,12 @@ describe('bodyCleaner', () => {
     expect(result).toBe('Hello');
   });
 
+  it('strips yet another way to quote the message', () => {
+    const input = 'Hello\n\n-----Ursprüngliche Nachricht-----\nVon: John Doe <john@dample.com>';
+    const result = cleanBody(input);
+    expect(result).toBe('Hello');
+  });
+
   it('trims trailing whitespace', () => {
     const input = 'Hello  \n  \n';
     const result = cleanBody(input);
