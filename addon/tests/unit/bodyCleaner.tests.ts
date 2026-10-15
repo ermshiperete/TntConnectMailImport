@@ -2,26 +2,22 @@ import { describe, it, expect } from 'vitest';
 import { cleanBody } from '@src/cleaner/bodyCleaner.ts';
 
 describe('bodyCleaner', () => {
-  it('strips -- signature delimiter', () => {
-    const input = 'Hello\n\n-- \nJohn Doe';
+  it.each([
+    'Hello\n\n-- \nJohn Doe',
+    'Hello\n\n___\nJohn Doe',
+  ])('strips signature delimiters: %s', (input) => {
     const result = cleanBody(input);
     expect(result).toBe('Hello');
   });
 
-  it('strips ___ delimiter', () => {
-    const input = 'Hello\n\n___\nJohn Doe';
-    const result = cleanBody(input);
-    expect(result).toBe('Hello');
-  });
-
-  it('strips quoted lines starting with >', () => {
-    const input = 'Hello\n\n> Quoted line\n> Another quote';
-    const result = cleanBody(input);
-    expect(result).toBe('Hello');
-  });
-
-  it('strips On ... wrote: quoted reply headers', () => {
-    const input = 'Hello\n\nOn Mon, Jan 1, 2024, John Doe <john@example.com> wrote:';
+  it.each([
+    'Hello\n\n> Quoted line\n> Another quote',
+    'Hello\n\nOn Mon, Jan 1, 2024, John Doe <john@example.com> wrote:',
+    'Hello\r\n\r\n-----Ursprüngliche Nachricht-----\r\nVon: John Doe <john@example.com>',
+    'Hello\n\nOn Mon, Jan 1, 2024, John wrote:\n\n> Hello\n> World',
+    'Hello\n\Am Mon, Jan 1, 2024 schrieb John:\n\n> Hello\n> World',
+    'Hello\nJohn Doe <john@example.com> schrieb am Di., 29. Sept. 2026, 11:42:\nHello World',
+  ])('strips reply headers: %s', (input) => {
     const result = cleanBody(input);
     expect(result).toBe('Hello');
   });
@@ -47,20 +43,10 @@ describe('bodyCleaner', () => {
     expect(result).toBe('Hello');
   });
 
-  it('strips quoted block after reply header', () => {
-    const input = 'Hello\n\nOn Mon, Jan 1, 2024, John wrote:\n\n> Hello\n> World';
-    const result = cleanBody(input);
-    expect(result).toBe('Hello');
-  });
-
-  it('strips warning header', () => {
-    const input = 'Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>\r\nLiebe Doe,';
-    const result = cleanBody(input);
-    expect(result).toBe('Liebe Doe,');
-  });
-
-  it('strips warning header in square brackets', () => {
-    const input = '[Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>]\r\nLiebe Doe,';
+  it.each([
+    ['no brackets', 'Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>\r\nLiebe Doe,'],
+    ['with brackets', '[Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>]\r\nLiebe Doe,'],
+  ])('strips warning header: %s (%s)', (name, input) => {
     const result = cleanBody(input);
     expect(result).toBe('Liebe Doe,');
   });

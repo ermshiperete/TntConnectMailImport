@@ -9,7 +9,9 @@ export function cleanBody(body: string): string {
     /^On[\s\S]*?\bwrote:[\s\S]*$/m,
     /^Am[\s\S]*?\bschrieb[\s\S]*$/m,
     /^\*?From:[\s\S]*$/m,
-    /^\*?Gesendet:[\s\S]*$/m
+    /^\*?Gesendet:[\s\S]*$/m,
+    /^-+Ursprüngliche Nachricht-+[\s\S]*$/m,
+    /[^\n]*\s*schrieb am[\s\S]*$/m,
   ];
 
   for (const pattern of replyHeaderPatterns) {
