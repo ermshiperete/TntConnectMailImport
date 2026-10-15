@@ -59,6 +59,12 @@ describe('bodyCleaner', () => {
     expect(result).toBe('Liebe Doe,');
   });
 
+  it('strips warning header in square brackets', () => {
+    const input = '[Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von john@example.com. Erfahren Sie, warum dies wichtig ist<https://aka.ms/LearnAboutSenderIdentification>]\r\nLiebe Doe,';
+    const result = cleanBody(input);
+    expect(result).toBe('Liebe Doe,');
+  });
+
   it('no match returns all', () => {
     const input = 'Hello\n\nThis is a test email.';
     const result = cleanBody(input);

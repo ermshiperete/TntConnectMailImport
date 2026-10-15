@@ -32,7 +32,7 @@ export function cleanBody(body: string): string {
     }
   }
 
-  const warningHeaderPattern = /^Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von [^@]+@(\w|\.)+\. Erfahren Sie, warum dies wichtig ist<https:\/\/aka\.ms\/LearnAboutSenderIdentification>\s+/m;
+  const warningHeaderPattern = /^\[?Einige Personen, die diese Nachricht erhalten haben, erhalten nicht oft eine E-Mail von [^@]+@(\w|\.)+\. Erfahren Sie, warum dies wichtig ist<https:\/\/aka\.ms\/LearnAboutSenderIdentification>\s*\]?\s*/m;
   const warningMatch = warningHeaderPattern.exec(cleaned);
   if (warningMatch) {
     cleaned = cleaned.replace(warningHeaderPattern, '');
